@@ -4,30 +4,45 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Stream;
 
 public class Deler {
 
+    private static final long BATCH_SIZE = 1000;
     private final List<Integer> delers;
 
     private Deler(List<Integer> delers) {
         this.delers = delers;
     }
 
-    public long eersteMatch() {
+    public boolean isMatch(long kandidaat) {
         boolean match = false;
-        for (long kandidaat = 1; kandidaat < Long.MAX_VALUE; kandidaat++) {
-            for (int deler : delers) {
-                if (kandidaat % deler != 0) {
-                    match = false;
-                    break;
-                }
-                match = true;
+        for (int deler : delers) {
+            if (kandidaat % deler != 0) {
+                match = false;
+                break;
             }
-            if (match) {
-                return kandidaat;
+            match = true;
+        }
+        return match;
+    }
+
+    private List<Long> matches(long beginKandidaat, long eindKandidaat) {
+        List<Long> matches = new ArrayList<>();
+        for (long kandidaat = beginKandidaat; kandidaat < eindKandidaat; kandidaat++) {
+            if (isMatch(kandidaat)) {
+                matches.add(kandidaat);
             }
         }
-        throw new IllegalStateException("We zijn door kandidaten heen");
+        return matches;
+    }
+
+    public long eersteMatch() {
+        return Stream.iterate(1L, i -> i + BATCH_SIZE)
+                .parallel()
+                .flatMap(i -> matches(i, i + BATCH_SIZE).stream())
+                .findFirst()
+                .orElseThrow(() -> new IllegalStateException("Not enough Long values"));
     }
 
     public static Deler create(int range) {
