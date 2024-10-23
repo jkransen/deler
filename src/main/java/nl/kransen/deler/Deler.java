@@ -14,9 +14,8 @@ public class Deler {
     }
 
     public long eersteMatch() {
-        long kandidaat = 1;
-        while (true) {
-            boolean match = false;
+        boolean match = false;
+        for (long kandidaat = 1; kandidaat < Long.MAX_VALUE; kandidaat++) {
             for (int deler : delers) {
                 if (kandidaat % deler != 0) {
                     match = false;
@@ -27,8 +26,8 @@ public class Deler {
             if (match) {
                 return kandidaat;
             }
-            kandidaat++;
         }
+        throw new IllegalStateException("We zijn door kandidaten heen");
     }
 
     public static Deler create(int range) {
